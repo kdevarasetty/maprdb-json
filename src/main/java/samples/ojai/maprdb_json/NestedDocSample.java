@@ -21,6 +21,7 @@ import samples.ojai.maprdb_json.annotations.Property;
 import samples.ojai.maprdb_json.annotations.UseBean;
 import samples.ojai.maprdb_json.beans.Address;
 import samples.ojai.maprdb_json.beans.SampleBean;
+import samples.ojai.maprdb_json.util.ConfigUtil;
 
 /**
  * @author kirand
@@ -29,6 +30,7 @@ import samples.ojai.maprdb_json.beans.SampleBean;
 
 @UseBean({
 		@Property(name = "bean", value = "samples.ojai.maprdb_json.beans.SampleBean"),
+		@Property(name = "bean.size", value = "10"),
 		@Property(name = "bean.address.phone.size", value = "2")
 		})
 public class NestedDocSample extends TestConfig {
@@ -83,7 +85,9 @@ public class NestedDocSample extends TestConfig {
 		person.setName("kiran");
 		person.setLastName("d");
 		beans.add(person);
-		for (int i = 0; i < 10; i++) {
+		
+		int numBeanSize = ConfigUtil.getInt(config, "bean.size");
+		for (int i = 0; i < numBeanSize; i++) {
 			beans.add(generateBean());
 		}
 		
