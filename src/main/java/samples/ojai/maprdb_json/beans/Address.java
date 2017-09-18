@@ -6,6 +6,7 @@ import static samples.ojai.maprdb_json.util.Randoms.randomNumericString;
 import java.util.Arrays;
 import java.util.Properties;
 
+import samples.ojai.maprdb_json.TestConfig;
 import samples.ojai.maprdb_json.util.ConfigUtil;
 
 public class Address {
@@ -42,12 +43,12 @@ public class Address {
 		return addr;
 	}
 
-	public static Address random(Properties config) {
+	public static Address random(TestConfig config) {
 		Address addr = new Address();
 		addr.setCity(randomAlphabeticString(10));
 		addr.setPincode(randomNumericString(7));
 		
-		int phoneCount = ConfigUtil.getInt(config, "bean.address.phone.size");
+		int phoneCount = config.getInt("bean.address.phone.size");
 		String[] phone = new String[phoneCount];
 		for (int i = 0; i < phoneCount; i++) {
 			phone[i] = randomNumericString(10);

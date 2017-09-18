@@ -18,6 +18,8 @@ import java.util.List;
 import com.mapr.db.Table;
 
 import samples.ojai.maprdb_json.annotations.Property;
+import samples.ojai.maprdb_json.annotations.AboutTest;
+import samples.ojai.maprdb_json.annotations.OverrideConf;
 import samples.ojai.maprdb_json.annotations.UseBean;
 import samples.ojai.maprdb_json.beans.Address;
 import samples.ojai.maprdb_json.beans.SampleBean;
@@ -28,14 +30,16 @@ import samples.ojai.maprdb_json.util.ConfigUtil;
  *
  */
 
-@UseBean({
-		@Property(name = "bean", value = "samples.ojai.maprdb_json.beans.SampleBean"),
-		@Property(name = "bean.size", value = "10"),
-		@Property(name = "bean.address.phone.size", value = "2")
-		})
-public class NestedDocSample extends TestConfig {
+@UseBean({ @Property(name = "bean", value = "samples.ojai.maprdb_json.beans.SampleBean"),
+		@Property(name = "bean.size", value = "10"), @Property(name = "bean.address.phone.size", value = "2"),
+		@Property(name = "table.name", value = "/apps/nested_docs") })
+@AboutTest({ @Property(name = "test.name", value = "AnotherTest"), @Property(name = "test.category", value = "cat1"),
+		@Property(name = "test.desc", value = "simple description"),
+		@Property(name = "cleanup.after", value = "false"),
+		@Property(name = "setup.before", value = "false") })
+public class AnotherTest extends TestConfig {
 
-	public static final String TABLE_PATH = "/apps/nested_docs";
+	public static String TABLE_PATH = null;
 
 	private Table table;
 
@@ -43,7 +47,7 @@ public class NestedDocSample extends TestConfig {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new NestedDocSample().run();
+		new AnotherTest().run();
 	}
 
 	private void run() {
@@ -56,46 +60,48 @@ public class NestedDocSample extends TestConfig {
 		insertSeveralBeans();
 		queryAll();
 	}
+	
+	void init() {
+		TABLE_PATH = getProperty("table.name");
+	}
 
-	private void insertBean() {
+	void setup() {
+		init();
+		table = getTable(TABLE_PATH);
+	}
+
+	void cleanup() {
+		init();
+		overrideConf.clear();
+		deleteTable(TABLE_PATH);
+	}
+
+	@OverrideConf({ @Property(name = "cleanup.after", value = "true"),
+			@Property(name = "setup.before", value = "true") })
+	void insertBean() {
 		out.println("\n\nInserting bean");
-		Address addr = new Address();
-		addr.setCity("hyd");
-		addr.setPincode("500007");
-
-		SampleBean person = new SampleBean();
-		person.setAddress(addr);
-		person.setId("4");
-		person.setName("kiran");
-		person.setLastName("d");
-
+		SampleBean person = generateBean();
 		insertOneBean(table, person);
 	}
 
-	private void insertSeveralBeans() {
+	@OverrideConf({ @Property(name = "bean.size", value = "5"),
+			@Property(name = "bean.address.phone.size", value = "3"),
+			@Property(name = "cleanup.after", value = "true"),
+			@Property(name = "setup.before", value = "true") })
+	void insertSeveralBeans() {
 		out.println("\n\nInserting multiple beans");
 		List<SampleBean> beans = new ArrayList<>();
-		Address addr = new Address();
-		addr.setCity("hyd");
-		addr.setPincode("500007");
 
-		SampleBean person = new SampleBean();
-		person.setAddress(addr);
-		person.setId("4");
-		person.setName("kiran");
-		person.setLastName("d");
-		beans.add(person);
-		
 		int numBeanSize = getInt("bean.size");
 		for (int i = 0; i < numBeanSize; i++) {
 			beans.add(generateBean());
 		}
-		
+
 		insertMultipleBeans(table, beans);
 	}
-	
+
 	private void insertSeveralBeansAsDocumentStream() {
-		
+
 	}
 
 	private SampleBean generateBean() {
@@ -111,7 +117,14 @@ public class NestedDocSample extends TestConfig {
 	/**
 	 * Print all records/documents in the table.
 	 */
-	private void queryAll() {
+	@OverrideConf({ @Property(name = "bean.size", value = "5"),
+			@Property(name = "bean.address.phone.size", value = "3"),
+			@Property(name = "cleanup.before", value = "true"),
+			@Property(name = "cleanup.after", value = "true"),
+			@Property(name = "setup.before", value = "true"),
+			@Property(name = "depends", value = "insertSeveralBeans"),
+			@Property(name = "test.name", value = "query all")})
+	void queryAll() {
 		printAll(table);
 	}
 

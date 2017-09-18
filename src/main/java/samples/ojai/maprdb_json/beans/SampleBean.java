@@ -8,6 +8,8 @@ import java.util.Properties;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import samples.ojai.maprdb_json.TestConfig;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SampleBean {
 	private String id;
@@ -64,7 +66,7 @@ public class SampleBean {
 		return bean;
 	}
 
-	public static SampleBean random(Properties config) {
+	public static SampleBean random(TestConfig config) {
 		SampleBean bean = new SampleBean();
 		bean.setId(randomAlphanumericString(5));
 		bean.setName(randomAlphabeticString(6));
