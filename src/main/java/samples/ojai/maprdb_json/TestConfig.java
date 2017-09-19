@@ -15,10 +15,6 @@ import samples.ojai.maprdb_json.internal.Maps;
 
 public abstract class TestConfig {
 	
-	static {
-		Maps.load();
-	}
-
 	protected final Map<String, String> config = new HashMap<>();
 	protected final Map<String, String> overrideConf = new HashMap<>();
 	protected final Map<String, String> aboutTest = new HashMap<>();
