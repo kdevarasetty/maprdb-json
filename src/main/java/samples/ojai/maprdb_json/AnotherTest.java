@@ -87,7 +87,9 @@ public class AnotherTest extends TestConfig {
 	@OverrideConf({ @Property(name = "bean.size", value = "5"),
 			@Property(name = "bean.address.phone.size", value = "3"),
 			@Property(name = "cleanup.after", value = "true"),
-			@Property(name = "setup.before", value = "true") })
+			@Property(name = "setup.before", value = "true"),
+			@Property(name = "test.category", value = "insert several documents"),
+			@Property(name = "test.keywords", value = "documents, several, multiple, insert"),})
 	void insertSeveralBeans() {
 		out.println("\n\nInserting multiple beans");
 		List<SampleBean> beans = new ArrayList<>();
@@ -123,6 +125,8 @@ public class AnotherTest extends TestConfig {
 			@Property(name = "cleanup.after", value = "true"),
 			@Property(name = "setup.before", value = "true"),
 			@Property(name = "depends", value = "insertSeveralBeans"),
+			@Property(name = "test.category", value = "query all documents"),
+			@Property(name = "test.keywords", value = "print, all, query"),
 			@Property(name = "test.name", value = "query all")})
 	void queryAll() {
 		printAll(table);

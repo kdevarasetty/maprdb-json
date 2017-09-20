@@ -18,15 +18,18 @@ import java.util.stream.Collectors;
 
 import samples.ojai.maprdb_json.annotations.AboutTest;
 import samples.ojai.maprdb_json.annotations.OverrideConf;
+import samples.ojai.maprdb_json.annotations.Property;
 import samples.ojai.maprdb_json.annotations.UseBean;
 
 public class Maps {
 
-	private static Map<String, List> categories, keywords, useBeans = new ConcurrentHashMap<>();
+	private static Map<String, List<String>> categories = new HashMap<>();
+	private static Map<String, List<String>> keywords = new HashMap<>();
+	private static Map<String, List<String>> useBeans = new HashMap<>();
 
 	private static final String pkg = "samples.ojai.maprdb_json";
 	// temp variable
-	private static final String cwd = "/Users/kirand/eclipse-workspace/maprdb-json-local/target/classes";
+	private static final String cwd = "/dockerdisk/github/maprdb-json/target/classes";
 
 	public static void main(String[] args) {
 		new Maps().build();
@@ -91,9 +94,6 @@ public class Maps {
 		if (classLevelConfs == null || methodLevelConfs == null)
 			return;
 
-		System.out.println(classLevelConfs);
-		System.out.println(methodLevelConfs);
-
 		Iterator<Entry<String, List<Annotation>>> iterator = classLevelConfs.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, List<Annotation>> entry = iterator.next();
@@ -115,9 +115,6 @@ public class Maps {
 			if (entry.getValue().isEmpty())
 				iterator1.remove();
 		}
-
-		System.out.println(classLevelConfs);
-		System.out.println(methodLevelConfs);
 	}
 
 	private boolean remove(OverrideConf overrideConf) {
@@ -134,19 +131,69 @@ public class Maps {
 
 	private void populateMaps(Map<String, List<Annotation>> classLevelConfs,
 			Map<String, Map<String, OverrideConf>> methodLevelConfs) {
-		populateCategories(classLevelConfs);
+		populateCategories(classLevelConfs, methodLevelConfs);
 		populateKeywords(classLevelConfs, methodLevelConfs);
 	}
 
 	private void populateKeywords(Map<String, List<Annotation>> classLevelConfs,
 			Map<String, Map<String, OverrideConf>> methodLevelConfs) {
-		// TODO Auto-generated method stub
-
+		populateIndexes(classLevelConfs, "test.keywords", keywords);
+		populateOverrideIndexes(methodLevelConfs, "test.keywords", keywords);
 	}
 
-	private void populateCategories(Map<String, List<Annotation>> classLevelConfs) {
-		// TODO Auto-generated method stub
+	private void populateCategories(Map<String, List<Annotation>> classLevelConfs,
+			Map<String, Map<String, OverrideConf>> methodLevelConfs) {
+		populateIndexes(classLevelConfs, "test.category", categories);
+		populateOverrideIndexes(methodLevelConfs, "test.category", categories);
+	}
+	
+	private void populateOverrideIndexes(Map<String, Map<String, OverrideConf>> methodLevelConfs, String key,
+			Map<String, List<String>> index) {
+		for (Entry<String, Map<String, OverrideConf>> conf : methodLevelConfs.entrySet()) {
+			String className = conf.getKey();
+			Map<String, OverrideConf> overrideMap = conf.getValue();
+			overrideMap.entrySet().forEach(entry -> {
+				OverrideConf overrideConf = entry.getValue();//null check already done
+				List<Property> properties = Arrays.asList(overrideConf.value());
+				List<Property> list = properties.stream().filter(p -> p.name().equals(key))
+						.collect(Collectors.toList());
+				
+				list.forEach(p -> {
+					List<String> words = Arrays.asList(p.value().split(","));
+					words.forEach(word -> {
+						List<String> strings = index.get(word.trim());
+						if (strings == null) {
+							strings = new ArrayList<>();
+							index.put(word.trim(), strings);
+						}
+						strings.add(conf.getKey() + "." + entry.getKey());
+					});
+				});
+			});
+		}		
+	}
 
+	private void populateIndexes(Map<String, List<Annotation>> classLevelConfs, String key,
+			Map<String, List<String>> index) {
+		for (Entry<String, List<Annotation>> conf : classLevelConfs.entrySet()) {
+			AboutTest aboutTest = (AboutTest) conf.getValue().get(1);
+			if (aboutTest != null) {
+				List<Property> properties = Arrays.asList(aboutTest.value());
+				List<Property> list = properties.stream().filter(p -> p.name().equals(key))
+						.collect(Collectors.toList());
+				list.forEach(p -> {
+					List<String> words = Arrays.asList(p.value().split(","));
+					words.forEach(word -> {
+						List<String> strings = index.get(word.trim());
+						if (strings == null) {
+							strings = new ArrayList<>();
+							index.put(word.trim(), strings);
+						}
+						strings.add(conf.getKey());
+					});
+				});
+			}
+		}
 	}
 
 	private void getClassAndMethodConfs(Class clazz, List<Annotation> classAnns, Map<String, OverrideConf> methodAnns) {
