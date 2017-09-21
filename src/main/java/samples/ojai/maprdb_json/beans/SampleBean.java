@@ -3,8 +3,6 @@ package samples.ojai.maprdb_json.beans;
 import static samples.ojai.maprdb_json.util.Randoms.randomAlphabeticString;
 import static samples.ojai.maprdb_json.util.Randoms.randomAlphanumericString;
 
-import java.util.Properties;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -51,10 +49,12 @@ public class SampleBean {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("SampleBean [id=%s, name=%s, lastName=%s, address=%s]", id, name, lastName, address);
+		return String.format(
+				"SampleBean [id=%s, name=%s, lastName=%s, address=%s]", id,
+				name, lastName, address);
 	}
 
 	public static SampleBean random() {

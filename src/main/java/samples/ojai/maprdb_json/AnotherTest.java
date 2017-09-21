@@ -17,26 +17,28 @@ import java.util.List;
 
 import com.mapr.db.Table;
 
-import samples.ojai.maprdb_json.annotations.Property;
 import samples.ojai.maprdb_json.annotations.AboutTest;
 import samples.ojai.maprdb_json.annotations.OverrideConf;
+import samples.ojai.maprdb_json.annotations.Property;
 import samples.ojai.maprdb_json.annotations.UseBean;
-import samples.ojai.maprdb_json.beans.Address;
 import samples.ojai.maprdb_json.beans.SampleBean;
-import samples.ojai.maprdb_json.util.ConfigUtil;
 
 /**
  * @author kirand
  *
  */
 
-@UseBean({ @Property(name = "bean", value = "samples.ojai.maprdb_json.beans.SampleBean"),
-		@Property(name = "bean.size", value = "10"), @Property(name = "bean.address.phone.size", value = "2"),
+@UseBean({
+		@Property(name = "bean", value = "samples.ojai.maprdb_json.beans.SampleBean"),
+		@Property(name = "bean.size", value = "10"),
+		@Property(name = "bean.address.phone.size", value = "2"),
 		@Property(name = "table.name", value = "/apps/nested_docs") })
-@AboutTest({ @Property(name = "test.name", value = "AnotherTest"), @Property(name = "test.category", value = "cat1"),
+@AboutTest({ @Property(name = "test.name", value = "AnotherTest"),
+		@Property(name = "test.category", value = "cat1"),
 		@Property(name = "test.desc", value = "simple description"),
 		@Property(name = "cleanup.after", value = "false"),
-		@Property(name = "setup.before", value = "false") })
+		@Property(name = "setup.before", value = "false"),
+		@Property(name = "data.file", value = "anothertest_samplebean.json") })
 public class AnotherTest extends TestConfig {
 
 	public static String TABLE_PATH = null;
@@ -56,11 +58,11 @@ public class AnotherTest extends TestConfig {
 		table = getTable(TABLE_PATH);
 		insertBean();
 		queryAll();
-		findBean("4");
+		findBean();
 		insertSeveralBeans();
 		queryAll();
 	}
-	
+
 	void init() {
 		TABLE_PATH = getProperty("table.name");
 	}
@@ -88,8 +90,9 @@ public class AnotherTest extends TestConfig {
 			@Property(name = "bean.address.phone.size", value = "3"),
 			@Property(name = "cleanup.after", value = "true"),
 			@Property(name = "setup.before", value = "true"),
+			@Property(name = "data.file", value = "anothertest_samplebean_insertseveralbeans.json"),
 			@Property(name = "test.category", value = "insert several documents"),
-			@Property(name = "test.keywords", value = "documents, several, multiple, insert"),})
+			@Property(name = "test.keywords", value = "documents, several, multiple, insert, all") })
 	void insertSeveralBeans() {
 		out.println("\n\nInserting multiple beans");
 		List<SampleBean> beans = new ArrayList<>();
@@ -100,6 +103,7 @@ public class AnotherTest extends TestConfig {
 		}
 
 		insertMultipleBeans(table, beans);
+		saveDataToFile(beans);
 	}
 
 	private void insertSeveralBeansAsDocumentStream() {
@@ -110,8 +114,16 @@ public class AnotherTest extends TestConfig {
 		return SampleBean.random(this);
 	}
 
-	private void findBean(String _id) {
-		SampleBean resultBean = findBeanById(table, _id, SampleBean.class);
+	@OverrideConf({ @Property(name = "cleanup.before", value = "true"),
+			@Property(name = "cleanup.after", value = "true"),
+			@Property(name = "setup.before", value = "true"),
+			@Property(name = "depends", value = "insertSeveralBeansFromFile"),
+			@Property(name = "test.category", value = "find one document"),
+			@Property(name = "test.keywords", value = "print, one, query, file, id"),
+			@Property(name = "test.name", value = "query for one document with data from file"),
+			@Property(name = "use.data.file", value = "anothertest_samplebean.json") })
+	void findBean() {
+		SampleBean resultBean = findBeanById(table, "0yo3w", SampleBean.class);
 		out.println("\n\nAfter converting result to Java Bean");
 		out.println("\t" + resultBean);
 	}
@@ -127,13 +139,37 @@ public class AnotherTest extends TestConfig {
 			@Property(name = "depends", value = "insertSeveralBeans"),
 			@Property(name = "test.category", value = "query all documents"),
 			@Property(name = "test.keywords", value = "print, all, query"),
-			@Property(name = "test.name", value = "query all")})
+			@Property(name = "test.name", value = "query all") })
 	void queryAll() {
 		printAll(table);
+	}
+
+	@OverrideConf({ @Property(name = "cleanup.before", value = "true"),
+			@Property(name = "cleanup.after", value = "true"),
+			@Property(name = "setup.before", value = "true"),
+			@Property(name = "depends", value = "insertSeveralBeansFromFile"),
+			@Property(name = "test.category", value = "query all documents"),
+			@Property(name = "test.keywords", value = "print, all, query, file"),
+			@Property(name = "test.name", value = "query all with data from file"),
+			@Property(name = "use.data.file", value = "anothertest_samplebean.json") })
+	void queryAllWithDataFile() {
+		try {
+			// importData(table);
+			// insertSeveralBeansFromFile();
+			printAll(table);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	void insertSeveralBeansFromFile() {
+		out.println("\n\nInserting multiple beans");
+		loadData(getProperty("use.data.file"), getProperty("bean"));
+		List<Object> beans = (List<Object>) context.get("beans.list");
+		insertMultipleBeans(table, beans);
 	}
 
 	private void deleteAll() {
 		deleteAllDocuments(table);
 	}
-
 }

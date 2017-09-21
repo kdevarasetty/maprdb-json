@@ -1,5 +1,7 @@
 package samples.ojai.maprdb_json.internal;
 
+import static java.lang.System.out;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -9,11 +11,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import samples.ojai.maprdb_json.annotations.AboutTest;
@@ -23,16 +26,21 @@ import samples.ojai.maprdb_json.annotations.UseBean;
 
 public class Maps {
 
-	private static Map<String, List<String>> categories = new HashMap<>();
-	private static Map<String, List<String>> keywords = new HashMap<>();
+	private static Map<String, Set<String>> categories = new HashMap<>();
+	private static Map<String, Set<String>> keywords = new HashMap<>();
 	private static Map<String, List<String>> useBeans = new HashMap<>();
 
 	private static final String pkg = "samples.ojai.maprdb_json";
 	// temp variable
-	private static final String cwd = "/dockerdisk/github/maprdb-json/target/classes";
+	private static final String cwd = "/Users/kirand/eclipse-workspace/maprdb-json-local/target/classes";
 
 	public static void main(String[] args) {
-		new Maps().build();
+		Maps maps = new Maps();
+//		maps.build();
+//		maps.categories("documents, all, multiple, print");
+//		maps.categories("cat1, insert several documents");
+		maps.listCategories();
+		maps.listKeywords();
 	}
 
 	private List<Path> allPaths = new ArrayList<>();
@@ -146,35 +154,35 @@ public class Maps {
 		populateIndexes(classLevelConfs, "test.category", categories);
 		populateOverrideIndexes(methodLevelConfs, "test.category", categories);
 	}
-	
+
 	private void populateOverrideIndexes(Map<String, Map<String, OverrideConf>> methodLevelConfs, String key,
-			Map<String, List<String>> index) {
+			Map<String, Set<String>> index) {
 		for (Entry<String, Map<String, OverrideConf>> conf : methodLevelConfs.entrySet()) {
 			String className = conf.getKey();
 			Map<String, OverrideConf> overrideMap = conf.getValue();
 			overrideMap.entrySet().forEach(entry -> {
-				OverrideConf overrideConf = entry.getValue();//null check already done
+				OverrideConf overrideConf = entry.getValue();// null check already done
 				List<Property> properties = Arrays.asList(overrideConf.value());
 				List<Property> list = properties.stream().filter(p -> p.name().equals(key))
 						.collect(Collectors.toList());
-				
+
 				list.forEach(p -> {
 					List<String> words = Arrays.asList(p.value().split(","));
 					words.forEach(word -> {
-						List<String> strings = index.get(word.trim());
+						Set<String> strings = index.get(word.trim());
 						if (strings == null) {
-							strings = new ArrayList<>();
+							strings = new HashSet<>();
 							index.put(word.trim(), strings);
 						}
 						strings.add(conf.getKey() + "." + entry.getKey());
 					});
 				});
 			});
-		}		
+		}
 	}
 
 	private void populateIndexes(Map<String, List<Annotation>> classLevelConfs, String key,
-			Map<String, List<String>> index) {
+			Map<String, Set<String>> index) {
 		for (Entry<String, List<Annotation>> conf : classLevelConfs.entrySet()) {
 			AboutTest aboutTest = (AboutTest) conf.getValue().get(1);
 			if (aboutTest != null) {
@@ -184,9 +192,9 @@ public class Maps {
 				list.forEach(p -> {
 					List<String> words = Arrays.asList(p.value().split(","));
 					words.forEach(word -> {
-						List<String> strings = index.get(word.trim());
+						Set<String> strings = index.get(word.trim());
 						if (strings == null) {
-							strings = new ArrayList<>();
+							strings = new HashSet<>();
 							index.put(word.trim(), strings);
 						}
 						strings.add(conf.getKey());
@@ -269,11 +277,56 @@ public class Maps {
 
 	}
 
-	public void listCategories() {
+	public void categories(String csv) {
+		search(csv, categories);
+	}
 
+	public void keywords(String csv) {
+		search(csv, keywords);
+	}
+
+	private void search(String csv, Map<String, Set<String>> index) {
+		build();
+		if (csv == null || csv.length() == 0) {
+			out.println("Missing criteria");
+			return;
+		}
+
+		List<String> words = Arrays.asList(csv.split(","));
+		Map<String, Set<String>> result = new HashMap<>();
+		words.forEach(word -> {
+			result.put(word, index.get(word.trim()));
+		});
+
+		printResults(result);
+	}
+
+	private void printResults(Map<String, Set<String>> result) {
+		out.println("Results:");
+		out.println("--------------------------------------------------------------------");
+		result.entrySet().forEach(entry -> {
+			String key = entry.getKey();
+			out.println("Word:- " + key + ":");
+			for (int i = 0; i < key.length() + 8; i++)
+				out.print("=");
+			out.println();
+			if (entry.getValue() != null)
+				for (String val : entry.getValue())
+					out.println(val);
+			else
+				out.println("No match found.");
+			out.println();
+		});
+		out.println("--------------------------------------------------------------------");
+	}
+
+	public void listCategories() {
+		build();
+		printResults(categories);
 	}
 
 	public void listKeywords() {
-
+		build();
+		printResults(keywords);
 	}
 }

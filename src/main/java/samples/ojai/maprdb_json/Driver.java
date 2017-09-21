@@ -15,7 +15,7 @@ public class Driver {
 		String className = getProperty("test.name", "samples.ojai.maprdb_json.AnotherTest");
 		String methodName = getProperty("test.method", "queryAll");
 
-		//hardcode these. Going the annotation route for this will be
+		//hard-code these. Going the annotation route for this will be
 		//an unnecessary complication as of now.
 		String setup = "setup";
 		String cleanup = "cleanup";

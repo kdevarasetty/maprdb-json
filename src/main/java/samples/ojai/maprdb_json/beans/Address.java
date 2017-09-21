@@ -4,10 +4,8 @@ import static samples.ojai.maprdb_json.util.Randoms.randomAlphabeticString;
 import static samples.ojai.maprdb_json.util.Randoms.randomNumericString;
 
 import java.util.Arrays;
-import java.util.Properties;
 
 import samples.ojai.maprdb_json.TestConfig;
-import samples.ojai.maprdb_json.util.ConfigUtil;
 
 public class Address {
 	private String city;
@@ -32,14 +30,15 @@ public class Address {
 
 	@Override
 	public String toString() {
-		return String.format("Address [city=%s, pincode=%s, phone=%s]", city, pincode, Arrays.toString(phone));
+		return String.format("Address [city=%s, pincode=%s, phone=%s]", city,
+				pincode, Arrays.toString(phone));
 	}
 
 	public static Address random() {
 		Address addr = new Address();
 		addr.setCity(randomAlphabeticString(10));
 		addr.setPincode(randomNumericString(7));
-		addr.setPhone(new String[]{"1234567890"});
+		addr.setPhone(new String[] { "1234567890" });
 		return addr;
 	}
 
@@ -47,7 +46,7 @@ public class Address {
 		Address addr = new Address();
 		addr.setCity(randomAlphabeticString(10));
 		addr.setPincode(randomNumericString(7));
-		
+
 		int phoneCount = config.getInt("bean.address.phone.size");
 		String[] phone = new String[phoneCount];
 		for (int i = 0; i < phoneCount; i++) {
