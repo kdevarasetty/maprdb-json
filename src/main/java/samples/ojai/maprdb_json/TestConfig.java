@@ -55,7 +55,14 @@ public abstract class TestConfig {
 	}
 
 	public int getInt(String property) {
-		return Integer.parseInt(getProperty(property));
+		return Integer.parseInt(getProperty(property, "1"));
+	}
+
+	private String getProperty(String property, String def) {
+		String val = getProperty(property);
+		if (val == null)
+			val = def;
+		return val;
 	}
 
 	public String getProperty(String property) {

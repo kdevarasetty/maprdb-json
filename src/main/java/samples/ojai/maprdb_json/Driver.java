@@ -12,11 +12,13 @@ public class Driver {
 	}
 
 	private static void run() {
-		String className = getProperty("test.name", "samples.ojai.maprdb_json.AnotherTest");
-		String methodName = getProperty("test.method", "queryAll");
+		String className = getProperty("test.name");
+		String methodName = getProperty("test.method");
+
+		validateCommand(className, methodName);
 
 		//hard-code these. Going the annotation route for this will be
-		//an unnecessary complication as of now.
+		// an unnecessary complication.
 		String setup = "setup";
 		String cleanup = "cleanup";
 		
@@ -35,6 +37,7 @@ public class Driver {
 			boolean doSetupBefore = instance.getBoolean("setup.before");
 			boolean doCleanupAfter = instance.getBoolean("cleanup.after");
 			String depends = instance.getProperty("depends");
+			out.println("depends = " + depends);
 
 			/*
 			 * get the Method objects for setup, cleanup, depends
@@ -70,6 +73,21 @@ public class Driver {
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
 				| SecurityException | IllegalArgumentException | InvocationTargetException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private static void validateCommand(String className, String methodName) {
+		if (className == null || className.trim().isEmpty()
+				|| methodName == null || methodName.isEmpty()) {
+			StringBuilder usage = new StringBuilder();
+
+			usage.append("Usage examples:\n").append(
+					"mvn exec:java -Dexec.mainClass=\"samples.ojai.maprdb_json.Driver")
+					.append(" -Dtest.name=samples.ojai.maprdb_json.AnotherTest -Dtest.method=queryAll")
+					.append("\n\n");
+
+			out.println(usage.toString());
+			System.exit(1);
 		}
 	}
 

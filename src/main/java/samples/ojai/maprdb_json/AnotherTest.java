@@ -123,7 +123,7 @@ public class AnotherTest extends TestConfig {
 			@Property(name = "test.name", value = "query for one document with data from file"),
 			@Property(name = "use.data.file", value = "anothertest_samplebean.json") })
 	void findBean() {
-		SampleBean resultBean = findBeanById(table, "0yo3w", SampleBean.class);
+		SampleBean resultBean = findBeanById(table, "4XZGb", SampleBean.class);
 		out.println("\n\nAfter converting result to Java Bean");
 		out.println("\t" + resultBean);
 	}
